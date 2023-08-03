@@ -6,6 +6,10 @@ import re
 from typing import List
 
 
+# Create the PII_FIELDS constant containing sensitive fields
+PII_FIELDS = ("name", "email", "ssn", "password", "date_of_birth")
+
+
 def filter_datum(fields: List[str], redaction: str,
                  message: str, separator: str) -> str:
     """
@@ -44,3 +48,19 @@ class RedactingFormatter(logging.Formatter):
         record.msg = filter_datum(self.fields,
                                   self.REDACTION, record.msg, self.SEPARATOR)
         return super(RedactingFormatter, self).format(record)
+
+
+def get_logger() -> logging.Logger:
+    logger = logging.getLogger('user_data')
+    logger.setLevel(logging.INFO)
+
+    # Create a StreamHandler with RedactingFormatter as the formatter
+    handler = logging.StreamHandler()
+    handler.setFormatter(RedactingFormatter(PII_FIELDS))
+
+    logger.addHandler(handler)
+
+    # Disable propagation to other loggers
+    logger.propagate = False
+
+    return logger
