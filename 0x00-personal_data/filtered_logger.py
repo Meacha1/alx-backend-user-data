@@ -2,8 +2,10 @@
 '''regex to obfuscate sensitive information'''
 
 import logging
+import os
 import re
 from typing import List
+import mysql.connector
 
 
 # Create the PII_FIELDS constant containing sensitive fields
@@ -64,3 +66,21 @@ def get_logger() -> logging.Logger:
     logger.propagate = False
 
     return logger
+
+
+def get_db():
+    # Get the database credentials from environment variables
+    db_username = os.getenv('PERSONAL_DATA_DB_USERNAME', 'root')
+    db_password = os.getenv('PERSONAL_DATA_DB_PASSWORD', '')
+    db_host = os.getenv('PERSONAL_DATA_DB_HOST', 'localhost')
+    db_name = os.getenv('PERSONAL_DATA_DB_NAME', 'my_db')
+
+    # Connect to the MySQL database
+    db = mysql.connector.connect(
+        user=db_username,
+        password=db_password,
+        host=db_host,
+        database=db_name
+    )
+
+    return db
