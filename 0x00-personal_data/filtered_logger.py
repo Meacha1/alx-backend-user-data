@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Filtered Logger Module
 
-This module contains classes and functions for logging and filtering sensitive information in log messages.
+This module contains classes and functions for logging and
+filtering sensitive information in log messages.
 
 """
 
@@ -15,7 +16,8 @@ import os
 class RedactingFormatter(logging.Formatter):
     """Redacting Formatter class
 
-    This class is responsible for formatting log records and obfuscating sensitive information.
+    This class is responsible for formatting log records
+    and obfuscating sensitive information.
 
     Attributes:
         REDACTION (str): The string to use for redacting sensitive information.
@@ -23,7 +25,8 @@ class RedactingFormatter(logging.Formatter):
         SEPARATOR (str): The separator character used in log messages.
 
     Args:
-        fields (List[str]): A list of field names to be obfuscated in log messages.
+        fields (List[str]): A list of field names to be
+        obfuscated in log messages.
 
     """
 
@@ -42,7 +45,8 @@ class RedactingFormatter(logging.Formatter):
             record (logging.LogRecord): The log record to be formatted.
 
         Returns:
-            str: The formatted log record with obfuscated sensitive information.
+            str: The formatted log record with obfuscated
+            sensitive information.
 
         """
         return filter_datum(self.fields, self.REDACTION,
@@ -59,7 +63,8 @@ def get_db() -> mysql.connector.connection.MySQLConnection:
     provided as environment variables.
 
     Returns:
-        mysql.connector.connection.MySQLConnection: The database connection object.
+        mysql.connector.connection.MySQLConnection: The database
+        connection object.
 
     """
     db_connect = mysql.connector.connect(
@@ -75,7 +80,8 @@ def filter_datum(fields: List[str], redaction: str, message: str,
                  separator: str) -> str:
     """Obfuscate sensitive information in log messages using regex.
 
-    This function replaces occurrences of certain field values with the provided redaction.
+    This function replaces occurrences of certain field
+    values with the provided redaction.
 
     Args:
         fields (List[str]): A list of field names to be obfuscated.
@@ -96,7 +102,8 @@ def filter_datum(fields: List[str], redaction: str, message: str,
 def get_logger() -> logging.Logger:
     """Get a logging.Logger object with a redacting formatter.
 
-    This function returns a logging.Logger object with the specified log level and a redacting formatter.
+    This function returns a logging.Logger object with
+    the specified log level and a redacting formatter.
 
     Returns:
         logging.Logger: The configured Logger object.
@@ -119,7 +126,8 @@ def get_logger() -> logging.Logger:
 def main() -> None:
     """Main function to retrieve and log data from the users table.
 
-    This function obtains a database connection, retrieves all rows from the users table,
+    This function obtains a database connection,
+    retrieves all rows from the users table,
     and logs each row under a filtered format.
 
     """
