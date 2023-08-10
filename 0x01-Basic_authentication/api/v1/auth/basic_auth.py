@@ -13,7 +13,7 @@ class BasicAuth(Auth):
         '''Constructor'''
         super().__init__(*args, **kwargs)
 
-    def  _decode(self, encoded_string: str) -> Tuple[str, str]:
+    def _decode(self, encoded_string: str) -> Tuple[str, str]:
         '''Decodes a base64 string'''
         try:
             decoded_string = base64.b64decode(encoded_string).decode('utf-8')
@@ -21,11 +21,11 @@ class BasicAuth(Auth):
             return None, None
         return re.split(':', decoded_string, 1)
 
-    def  _validate(self, user: str, password: str) -> bool:
+    def _validate(self, user: str, password: str) -> bool:
         '''Validates a user and password'''
         return user == self.user and password == self.password
 
-    def  _authenticate(self, header: str) -> bool:
+    def _authenticate(self, header: str) -> bool:
         '''Authenticates a request'''
         if not header:
             return False
