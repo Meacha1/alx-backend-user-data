@@ -1,79 +1,46 @@
 #!/usr/bin/env python3
-"""Route module for the API.
+"""Authentication module for the API.
 """
 import os
-from os import getenv
-from flask import Flask, jsonify, abort, request
-from flask_cors import (CORS, cross_origin)
-
-from api.v1.views import app_views
-from api.v1.auth.auth import Auth
-from api.v1.auth.basic_auth import BasicAuth
-from api.v1.auth.session_auth import SessionAuth
-from api.v1.auth.session_db_auth import SessionDBAuth
-from api.v1.auth.session_exp_auth import SessionExpAuth
+import re
+from typing import List, TypeVar
+from flask import request
 
 
-app = Flask(__name__)
-app.register_blueprint(app_views)
-CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
-auth = None
-auth_type = getenv('AUTH_TYPE', 'auth')
-if auth_type == 'auth':
-    auth = Auth()
-if auth_type == 'basic_auth':
-    auth = BasicAuth()
-if auth_type == 'session_auth':
-    auth = SessionAuth()
-if auth_type == 'session_exp_auth':
-    auth = SessionExpAuth()
-if auth_type == 'session_db_auth':
-    auth = SessionDBAuth()
-
-
-@app.errorhandler(404)
-def not_found(error) -> str:
-    """Not found handler.
+class Auth:
+    """Authentication class.
     """
-    return jsonify({"error": "Not found"}), 404
+    def require_auth(self, path: str, excluded_paths: List[str]) -> bool:
+        """Checks if a path requires authentication.
+        """
+        if path is not None and excluded_paths is not None:
+            for exclusion_path in map(lambda x: x.strip(), excluded_paths):
+                pattern = ''
+                if exclusion_path[-1] == '*':
+                    pattern = '{}.*'.format(exclusion_path[0:-1])
+                elif exclusion_path[-1] == '/':
+                    pattern = '{}/*'.format(exclusion_path[0:-1])
+                else:
+                    pattern = '{}/*'.format(exclusion_path)
+                if re.match(pattern, path):
+                    return False
+        return True
 
+    def authorization_header(self, request=None) -> str:
+        """Gets the authorization header field from the request.
+        """
+        if request is not None:
+            return request.headers.get('Authorization', None)
+        return None
 
-@app.errorhandler(401)
-def unauthorized(error) -> str:
-    """Unauthorized handler.
-    """
-    return jsonify({"error": "Unauthorized"}), 401
+    def current_user(self, request=None) -> TypeVar('User'):
+        """Gets the current user from the request.
+        """
+        return None
 
-
-@app.errorhandler(403)
-def forbidden(error) -> str:
-    """Forbidden handler.
-    """
-    return jsonify({"error": "Forbidden"}), 403
-
-
-@app.before_request
-def authenticate_user():
-    """Authenticates a user before processing a request.
-    """
-    if auth:
-        excluded_paths = [
-            "/api/v1/status/",
-            "/api/v1/unauthorized/",
-            "/api/v1/forbidden/",
-            "/api/v1/auth_session/login/",
-        ]
-        if auth.require_auth(request.path, excluded_paths):
-            user = auth.current_user(request)
-            if auth.authorization_header(request) is None and \
-                    auth.session_cookie(request) is None:
-                abort(401)
-            if user is None:
-                abort(403)
-            request.current_user = user
-
-
-if __name__ == "__main__":
-    host = getenv("API_HOST", "0.0.0.0")
-    port = getenv("API_PORT", "5000")
-    app.run(host=host, port=port)
+    def session_cookie(self, request=None) -> str:
+        """Gets the value of the cookie named SESSION_NAME.
+        """
+        if request is not None:
+            cookie_name = os.getenv('SESSION_NAME')
+            return request.cookies.get(cookie_name)
